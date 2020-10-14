@@ -196,16 +196,30 @@ public class Tree {
 	}
 	
 	// print people at a given level from a starting person == level 1. find given level by recursive calling
-	public void printGivenLevel(Person person, int level) {
-		if (person == null) {
+	public void printGivenLevel(Person root, int level) {
+		// handle null case
+		if (root == null) {
 			return;
 		}
 		if (level == 1) {
-			System.out.println(person.getName());
+			System.out.println(root.getName());
 		} else if (level > 1) {
 			// recursion step. run same function on before and after nodes, with 1 subtracted from level
-			printGivenLevel(person.getBefore(), level - 1);
-			printGivenLevel(person.getAfter(), level - 1);
+			printGivenLevel(root.getBefore(), level - 1);
+			printGivenLevel(root.getAfter(), level - 1);
+		}
+	}
+	
+	// print people at a given level based on surname tree
+	public void printGivenSurnameLevel(Person root, int level) {
+		if (root == null) {
+			return;
+		}
+		if (level == 1) {
+			System.out.println(root.getSurnameFirstName());
+		} else if (level > 1) {
+			printGivenSurnameLevel(root.getBefore(), level - 1);
+			printGivenSurnameLevel(root.getAfter(), level - 1);
 		}
 	}
 	
@@ -233,11 +247,11 @@ public class Tree {
 		if (root == null) {
 			return 0;
 		} else {
-			// compute height of each subtree
+			// compute height of each subtree using recursive call
 			int beforeHeight = computeTreeHeight(root.getBeforeBySurname());
 			int afterHeight = computeTreeHeight(root.getAfterBySurname());
 			
-			// return largest "height"
+			// return largest "height" incrementing by 1 each step
 			if (beforeHeight > afterHeight) {
 				return beforeHeight + 1;
 			} else {
@@ -245,6 +259,27 @@ public class Tree {
 			}
 		}
 	}
+	
+	// print each successive level of name tree.
+	public void printLevels() {
+		// compute tree height
+		int height = computeTreeHeight(root);
+		// root person is considered level 1. iterate through and print levels 1 through height
+		for (int i=1; i<height + 1; i++) {
+			System.out.println("Name Tree Level " + i);
+			printGivenLevel(root, i);
+		}
+	}
+	
+	// print each successive level of surname tree.
+	public void printSurnameLevels() {
+		int height = computeSurnameTreeHeight(surnameRoot);
+		for (int i=1; i<height + 1; i++) {
+			System.out.println("Surname Tree Level " + i);
+			printGivenSurnameLevel(surnameRoot, i);
+		}
+	}
+	
 	
 	// we don't want the tree to be skewed, but actually for an A grade assignment we wanna be able to detect skew and also change the tree to lessen it so. might as well just set the first name as the root for now and work on the code to sort the skew later :)
 	
@@ -259,6 +294,10 @@ public class Tree {
 		tree.printAllPostOrderedBySurname();
 		System.out.println(tree.computeTreeHeight(tree.root));
 		System.out.println(tree.computeSurnameTreeHeight(tree.surnameRoot));
+		
+		// print successive levels of the trees
+		tree.printLevels();
+		tree.printSurnameLevels();
 	}
 
 }
