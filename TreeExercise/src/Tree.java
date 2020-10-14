@@ -4,6 +4,7 @@ import java.io.FileReader;
 public class Tree {
 
 	private Person root;
+	private Person surnameRoot;
 
 	public Tree() {
 		this.root = null;
@@ -20,8 +21,9 @@ public class Tree {
 			while (csvReader.readLine() != null) {
 				String name = csvReader.readLine();
 				// add person to existing tree by name and surname
-				this.addPerson(new Person(name));
-//				this.addPersonToSurnameTree(new Person(name));
+				Person person = new Person(name);
+				this.addPerson(person);
+				this.addSurnameLinks(person);
 			}
 			csvReader.close();
 			
@@ -43,7 +45,6 @@ public class Tree {
 		if (newP.getName().compareTo(currentP.getName()) < 0) {
 			if (currentP.getBefore() == null) {
 				currentP.setBefore(newP);
-				// yeah nah, it would be INCORRECT to set the after person on the new person to the current person. This is not a doubly linked list!!! It's a binary tree!! 
 			} else {
 				addPerson(currentP.getBefore(), newP);
 			}
@@ -58,33 +59,33 @@ public class Tree {
 
 		
 	}
-//	// gotta repeat the above for ordering by surname now too! right?
-//	public void addPersonToSurnameTree(Person newPerson) {
-//		if (root == null) {
-//			this.root = newPerson;
-//		} else {
-//			addPerson(root, newPerson);
-//		}
-//	}
-//	public void addPersonToSurnameTree(Person currentP, Person newP) {
-//		if (newP.getSurname().compareTo(currentP.getSurname()) < 0) {
-//					
-//			if (currentP.getBeforeBySurname() == null) {
-////				System.out.println("setting " + newP.getName() + " before " + currentP.getName());
-//				currentP.setBeforeBySurname(newP);
-//			} else {
-//				addPerson(currentP.getBeforeBySurname(), newP);
-//			}
-//			
-//		} else {
-//			if (currentP.getAfterBySurname() == null) {
-////				System.out.println("setting " + newP.getName() + " after " + currentP.getName());
-//				currentP.setAfterBySurname(newP);
-//			} else {
-//				addPerson(currentP.getAfterBySurname(), newP);
-//			}
-//		}
-//	}
+	// gotta repeat the above for ordering by surname now too! right?
+	public void addSurnameLinks(Person newPerson) {
+		if (surnameRoot == null) {
+			this.surnameRoot = newPerson;
+		} else {
+			addSurnameLinks(surnameRoot, newPerson);
+		}
+	}
+	public void addSurnameLinks(Person currentP, Person newP) {
+		if (newP.getSurname().compareTo(currentP.getSurname()) < 0) {
+					
+			if (currentP.getBeforeBySurname() == null) {
+//				System.out.println("setting " + newP.getName() + " before " + currentP.getName());
+				currentP.setBeforeBySurname(newP);
+			} else {
+				addSurnameLinks(currentP.getBeforeBySurname(), newP);
+			}
+			
+		} else {
+			if (currentP.getAfterBySurname() == null) {
+//				System.out.println("setting " + newP.getName() + " after " + currentP.getName());
+				currentP.setAfterBySurname(newP);
+			} else {
+				addSurnameLinks(currentP.getAfterBySurname(), newP);
+			}
+		}
+	}
 	
 	public void printAll() {
 		printNames(root);
@@ -101,22 +102,22 @@ public class Tree {
 			printNames(current.getAfter());
 		}
 	}
-//
-//	public void printAllOrderedBySurname() {
-//		printNamesOrderedBySurname(root);
-//	}
-//	public void printNamesOrderedBySurname(Person current) {
-//		// check for before person and run recursion on them
-//		if (current.getBeforeBySurname() != null) {
-//			printNamesOrderedBySurname(current.getBeforeBySurname());
-//		}
-//		// print current person's full name after exhausting before persons recursive calls
-//		System.out.println(current.getName());
-//		// check for after person and run recursion on them
-//		if (current.getAfterBySurname() != null) {
-//			printNamesOrderedBySurname(current.getAfterBySurname());
-//		}
-//	}
+
+	public void printAllOrderedBySurname() {
+		printNamesOrderedBySurname(root);
+	}
+	public void printNamesOrderedBySurname(Person current) {
+		// check for before person and run recursion on them
+		if (current.getBeforeBySurname() != null) {
+			printNamesOrderedBySurname(current.getBeforeBySurname());
+		}
+		// print current person's full name after exhausting before persons recursive calls
+		System.out.println(current.getSurnameFirstName());
+		// check for after person and run recursion on them
+		if (current.getAfterBySurname() != null) {
+			printNamesOrderedBySurname(current.getAfterBySurname());
+		}
+	}
 	
 	
 	// we don't want the tree to be skewed, but actually for an A grade assignment we wanna be able to detect skew and also change the tree to lessen it so. might as well just set the first name as the root for now and work on the code to sort the skew later :)
@@ -133,4 +134,14 @@ public class Tree {
 		tree.addPerson(new Person("Wilhemina"));
 	}
 	
+	public static void main(String[] args) {
+//		Tree tree = new Tree(new Person("Mike"));
+//		tree.testNames(tree);
+//		tree.printAll();
+		Tree tree = new Tree();
+		tree.addNamesFromCSVFile("mswdev.csv");
+		tree.printAll();
+		tree.printAllOrderedBySurname();
+	}
+
 }
