@@ -1,5 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.ArrayDeque;
+import java.util.Queue;
 
 public class Tree {
 
@@ -18,8 +20,10 @@ public class Tree {
 	public void addNamesFromCSVFile(String fileName) {
 		try {
 			BufferedReader csvReader = new BufferedReader(new FileReader(fileName));
-			while (csvReader.readLine() != null) {
-				String name = csvReader.readLine();
+			// instantiate name variable to be read
+			String name;
+			while ((name = csvReader.readLine()) != null) {
+				System.out.println("reading: " + name);
 				// add person to existing tree by name and surname
 				Person person = new Person(name);
 				this.addPerson(person);
@@ -180,19 +184,40 @@ public class Tree {
 		System.out.println(current.getSurnameFirstName());
 	}
 	
-	// breadth-first printing
-	public void printAllBreadthFirst() {
-		printNamesBreadthFirst(root);
-	}
-	public void printNamesBreadthFirst(Person person) {
-
+	// breadth-first search to print names - traversing tree level by level. use a queue.
+	public void printNamesBreadthFirst(Person root) {
+		Queue<Person> queue = new ArrayDeque<Person>();
+		queue.offer(root);
+		while (!queue.isEmpty()) {
+			// grab first person in the queue and print their name
+			Person person = queue.poll();
+			System.out.println(person.getName());
+			// add the before and after people to the queue... i really don't get how this works :S how tf this work?
+			if (person.getBefore() != null) {
+				queue.offer(person.getBefore());
+			}
+			if (person.getAfter() != null) {
+				queue.offer(person.getAfter());
+			}
+		}
 	}
 	
-	public void printAllBySurnameBreadthFirst() {
-		printNamesBreadthFirst(surnameRoot);
-	}
-	public void printNamesBySurnameBreadthFirst(Person person) {
-		
+	// breadth-first traversal of surname-linked tree level by level. use 
+	public void printNamesBySurnameBreadthFirst(Person root) {
+		Queue<Person> queue = new ArrayDeque<Person>();
+		queue.offer(root);
+		while (!queue.isEmpty()) {
+			// grab first person in the queue and print their name
+			Person person = queue.poll();
+			System.out.println(person.getSurnameFirstName());
+			// add the before and after people to the queue... i really don't get how this works :S how tf this work?
+			if (person.getBeforeBySurname() != null) {
+				queue.offer(person.getBeforeBySurname());
+			}
+			if (person.getAfterBySurname() != null) {
+				queue.offer(person.getAfterBySurname());
+			}
+		}
 	}
 	
 	// print people at a given level from a starting person == level 1. find given level by recursive calling
@@ -218,8 +243,8 @@ public class Tree {
 		if (level == 1) {
 			System.out.println(root.getSurnameFirstName());
 		} else if (level > 1) {
-			printGivenSurnameLevel(root.getBefore(), level - 1);
-			printGivenSurnameLevel(root.getAfter(), level - 1);
+			printGivenSurnameLevel(root.getBeforeBySurname(), level - 1);
+			printGivenSurnameLevel(root.getAfterBySurname(), level - 1);
 		}
 	}
 	
@@ -248,8 +273,8 @@ public class Tree {
 			return 0;
 		} else {
 			// compute height of each subtree using recursive call
-			int beforeHeight = computeTreeHeight(root.getBeforeBySurname());
-			int afterHeight = computeTreeHeight(root.getAfterBySurname());
+			int beforeHeight = computeSurnameTreeHeight(root.getBeforeBySurname());
+			int afterHeight = computeSurnameTreeHeight(root.getAfterBySurname());
 			
 			// return largest "height" incrementing by 1 each step
 			if (beforeHeight > afterHeight) {
@@ -266,7 +291,7 @@ public class Tree {
 		int height = computeTreeHeight(root);
 		// root person is considered level 1. iterate through and print levels 1 through height
 		for (int i=1; i<height + 1; i++) {
-			System.out.println("Name Tree Level " + i);
+			System.out.println("- Name Tree Level " + i + " -");
 			printGivenLevel(root, i);
 		}
 	}
@@ -275,7 +300,7 @@ public class Tree {
 	public void printSurnameLevels() {
 		int height = computeSurnameTreeHeight(surnameRoot);
 		for (int i=1; i<height + 1; i++) {
-			System.out.println("Surname Tree Level " + i);
+			System.out.println("- Surname Tree Level " + i + " -");
 			printGivenSurnameLevel(surnameRoot, i);
 		}
 	}
@@ -288,16 +313,20 @@ public class Tree {
 		tree.addNamesFromCSVFile("mswdev.csv");
 		tree.printAll();
 		tree.printAllOrderedBySurname();
-		tree.printAllPreOrder();
-		tree.printAllPreOrderedBySurname();
-		tree.printAllPostOrder();
-		tree.printAllPostOrderedBySurname();
+//		tree.printAllPreOrder();
+//		tree.printAllPreOrderedBySurname();
+//		tree.printAllPostOrder();
+//		tree.printAllPostOrderedBySurname();
 		System.out.println(tree.computeTreeHeight(tree.root));
 		System.out.println(tree.computeSurnameTreeHeight(tree.surnameRoot));
 		
-		// print successive levels of the trees
+		// print successive levels of the trees using composite method breadth first search
 		tree.printLevels();
 		tree.printSurnameLevels();
+
+		// print successive levels using queue-employing breadth first search
+		tree.printNamesBreadthFirst(tree.root);
+		tree.printNamesBySurnameBreadthFirst(tree.surnameRoot);
 	}
 
 }
