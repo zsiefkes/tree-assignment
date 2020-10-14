@@ -1,23 +1,54 @@
 
 public class Person {
 	private String name;
+	private String surname;
+	private String surnameFirstName;
 	private Person before;
 	private Person after;
+	private Person beforeBySurname;
+	private Person afterBySurname;
 	
 	public Person(String name) {
 		this.name = name;
+		// set surname, if applicable. assumes that surname is the last word in the string.
+		if (name.contains(" ")) {
+			String[] names = name.split(" ");
+			this.surname = names[names.length - 1];
+			this.surnameFirstName = surname + ", " + name.substring(0, name.length() - surname.length());
+		} else {
+			this.surname = "";
+			this.surnameFirstName = name;
+		}
 		this.before = null;
 		this.after = null;
 	}
 	
-	public Person(String name, Person before, Person after) {
-		this.name = name;
-		this.before = before;
-		this.after = after;
-	}
-
 	// Getters and Setters
 	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getSurname() {
+		return surname;
+	}
+
+	public void setSurname(String surname) {
+		this.surname = surname;
+	}
+
+	public String getSurnameFirstName() {
+		return surnameFirstName;
+	}
+
+	public void setSurnameFirstName(String surnameFirstName) {
+		this.surnameFirstName = surnameFirstName;
+	}
+
 	public Person getBefore() {
 		return before;
 	}
@@ -34,8 +65,20 @@ public class Person {
 		this.after = after;
 	}
 
-	public String getName() {
-		return name;
+	public Person getBeforeBySurname() {
+		return beforeBySurname;
+	}
+
+	public void setBeforeBySurname(Person beforeBySurname) {
+		this.beforeBySurname = beforeBySurname;
+	}
+
+	public Person getAfterBySurname() {
+		return afterBySurname;
+	}
+
+	public void setAfterBySurname(Person afterBySurname) {
+		this.afterBySurname = afterBySurname;
 	}
 
 }
