@@ -1,6 +1,7 @@
 
 public class Person {
 	private String name;
+	private String firstName;
 	private String surname;
 	private String surnameFirstName;
 	private Person before;
@@ -14,9 +15,11 @@ public class Person {
 		if (name.contains(" ")) {
 			String[] names = name.split(" ");
 			this.surname = names[names.length - 1];
-			this.surnameFirstName = surname + ", " + name.substring(0, name.length() - surname.length());
+			this.firstName = name.substring(0, name.length() - surname.length() - 1);
+			this.surnameFirstName = surname + ", " + firstName;
 		} else {
 			this.surname = "";
+			this.firstName = name;
 			this.surnameFirstName = name;
 		}
 		this.before = null;
