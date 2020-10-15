@@ -1,10 +1,15 @@
-// add search by name and last name
-// add search for people names with length properties
-// ^ note both searches need to be recursively structured!
+// allow for name changes and redo the ordering.
+// ^ for this one, need a name change method on Person class to filter through the changes to surname etc.
 // make it javafx-y!
 // measure skew
 // fix skew. phwoar
 // add timing shizz
+// tips from karsten on measuring skew:
+/*
+ * measuring the height is a good one. you can compute what the height of a "perfect" binary tree would be for the number of nodes you have, and compare that to your actual height.
+ * You can also count the number of nodes on each side of the root node to detect whether it's left or right skewed.
+ */
+
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -69,8 +74,221 @@ public class Tree {
 			}
 		}
 
+	}
+	
+	// want to be able to remove a person from both trees, for the sake of changing their names. yeah?
+	public void changeName(Person person, String newName) {
+		// what we do here: we connect either the before or after node to... crap. um crap crap crap
+		// i think what we do is we remove all the child nodes
+		// then recursively add each one back. it'll start at the root then move down the tree. i think that makes sense :)
+		// how to we "remove" it from the tree?
+		// i think you need to first find the parent node. so do a depth or breadth first search until you find them.
+		
+		// first find parent node
+		Person parent = findParent(person);
+		
+		if (parent == null) {
+			System.out.println("parent null");
+		}
+		if (parent.getBefore() == null) {
+			System.out.println("parent get before null");
+		}
+		if (parent.getAfter() == null) {
+			System.out.println("parent get after null");
+		}
+		
+		// remove person from parent node's children
+		if (parent != null) {
+			if (parent.getBefore() != null && person == parent.getBefore()) {
+				parent.setBefore(null);
+			} else if (parent.getAfter() != null && person == parent.getAfter()) {
+				parent.setAfter(null);
+			} else {
+				// something went wrong
+				System.out.println("Error!!!! ");
+				return;
+			}
+		}
+		
+		// need to repeat above for the surname vertices!!!!
+		
+		// first find surname parent node 
+		Person surnameParent = findSurnameParent(person);
+		
+		if (surnameParent == null) {
+			System.out.println("surnameParent null");
+//			return;
+		}
+		if (surnameParent.getBeforeBySurname() == null) {
+			System.out.println("surnameParent get before null");
+		}
+		if (surnameParent.getAfterBySurname() == null) {
+			System.out.println("surnameParent get after null");
+		}
+		
+		// remove person from parent node's children
+		if (surnameParent != null) {
+			if (surnameParent.getBeforeBySurname() != null && person == surnameParent.getBeforeBySurname()) {
+				surnameParent.setBeforeBySurname(null);
+			} else if (surnameParent.getAfterBySurname() != null && person == surnameParent.getAfterBySurname()) {
+				surnameParent.setAfterBySurname(null);
+			} else {
+				// something went wrong
+				System.out.println("Error!!!! ");
+				return;
+			}
+		}
+		// now change the name
+		person.setName(newName);
+
+		// now we need to remove each of its child nodes from the tree, i think effectively just by removing the before and after vertices, and then add each one back to the tree. yeah?
+		removeAndAddBack(person);
+		// same for the surname vertices
+		removeSurnameVerticesAndAddBack(person);
 		
 	}
+	
+	public void removeAndAddBack(Person person) {
+		Queue<Person> queue = new ArrayDeque<Person>();
+		queue.offer(person);
+		while (!queue.isEmpty()) {
+			Person current = queue.poll();
+			// add the before and after links to the queue
+			if (current.getBefore() != null) {
+				queue.offer(current.getBefore());
+			}
+			if (current.getAfter() != null) {
+				queue.offer(current.getAfter());
+			}
+			// now, remove the before and after links
+			current.setBefore(null);
+			current.setAfter(null);
+			
+			// now try add the person back to the tree :o
+			addPerson(current);
+			
+		}
+	}
+	
+	public void removeSurnameVerticesAndAddBack(Person person) {
+		Queue<Person> queue = new ArrayDeque<Person>();
+		queue.offer(person);
+		while (!queue.isEmpty()) {
+			Person current = queue.poll();
+			// add the before and after links to the queue
+			if (current.getBeforeBySurname() != null) {
+				queue.offer(current.getBeforeBySurname());
+			}
+			if (current.getAfterBySurname() != null) {
+				queue.offer(current.getAfterBySurname());
+			}
+			// now, remove the before and after links
+			current.setBeforeBySurname(null);
+			current.setAfterBySurname(null);
+			// done! ? I think?
+
+			// now try add the person back to the tree :o
+			addSurnameLinks(current);
+			
+		}
+	}
+//	
+//	// recursively remove children from a node, and all the children of each of its children.
+//	public Person removeChildren(Person person) {
+//		if (person.getBefore() != null) {
+//			removeChildren(person.getBefore());
+//		}
+//		person.setBefore(null);
+//		if (person.getAfter() != null) {
+//			removeChildren(person.getAfter());
+//		}
+//		person.setAfter(null);
+//		return person;
+//	}
+	
+	// use queue to run breadth first search from root to find parent node of a given node
+	public Person findParent(Person person) {
+		// check if root
+		if (root == person) {
+			return null;
+		}
+		Queue<Person> queue = new ArrayDeque<Person>();
+		// you have to start at the root.
+		queue.offer(root);
+		while (!queue.isEmpty()) {
+			Person current = queue.poll();
+			if (current.getBefore() != null) {
+				if (current.getBefore().equals(person)) {
+					return current;
+				} else {
+					queue.offer(current.getBefore());
+				}
+			}
+			if (current.getAfter() != null) {
+				if (current.getAfter().equals(person)) {
+					return current;
+				} else {
+					queue.offer(current.getAfter());
+				}
+			}
+		}
+		return null;
+	}
+	
+	public Person findSurnameParent(Person person) {
+		// check if root
+		if (surnameRoot == person) {
+			return null;
+		}
+		Queue<Person> queue = new ArrayDeque<Person>();
+		// you have to start at the root.
+		queue.offer(surnameRoot);
+		while (!queue.isEmpty()) {
+			Person current = queue.poll();
+			if (current.getBeforeBySurname() != null) {
+				if (current.getBeforeBySurname().equals(person)) {
+					return current;
+				} else {
+					queue.offer(current.getBeforeBySurname());
+				}
+			}
+			if (current.getAfterBySurname() != null) {
+				if (current.getAfterBySurname().equals(person)) {
+					return current;
+				} else {
+					queue.offer(current.getAfterBySurname());
+				}
+			}
+		}
+		return null;
+	}
+	
+//	public Person findParent(Person person) {
+//		return findParent(root, person);
+//	}
+//	
+//	public Person findParent(Person current, Person person) {
+//		// check if root 
+//		if (current == person) {
+//			return current;
+//		}
+//		// check if the current node is a parent of the person in question 
+//		if (current.getBefore() == person) {
+//			return current;
+//		}
+//		if (current.getAfter() == person) {
+//			return current;
+//		}
+//		// if parent node has not yet been found, send off to child nodes
+//		if (current.getBefore() != null) {
+//			findParent(current.getBefore(), person);
+//		}
+//		if (current.getAfter() != null) {
+//			findParent(current.getAfter(), person);
+//		}
+//		return null;
+//	}
+	
 	// gotta repeat the above for ordering by surname now too! right?
 	public void addSurnameLinks(Person newPerson) {
 		if (surnameRoot == null) {
@@ -193,6 +411,10 @@ public class Tree {
 	}
 	
 	// breadth-first search to print names - traversing tree level by level. use a queue.
+	public void printNamesBreadthFirst() {
+		printNamesBreadthFirst(root);
+	}
+	
 	public void printNamesBreadthFirst(Person root) {
 		Queue<Person> queue = new ArrayDeque<Person>();
 		queue.offer(root);
@@ -210,7 +432,11 @@ public class Tree {
 		}
 	}
 	
-	// breadth-first traversal of surname-linked tree level by level. use 
+	// breadth-first traversal of surname-linked tree level by level. use
+	public void printNamesBySurnameBreadthFirst() {
+		printNamesBySurnameBreadthFirst(surnameRoot);
+	}
+	
 	public void printNamesBySurnameBreadthFirst(Person root) {
 		Queue<Person> queue = new ArrayDeque<Person>();
 		queue.offer(root);
@@ -257,6 +483,10 @@ public class Tree {
 	}
 	
 	// compute height of the tree (longest depth traversal) starting from root node
+	public int computeTreeHeight() {
+		return computeTreeHeight(root);
+	}
+	
 	public int computeTreeHeight(Person root) {
 		// if we have reached a leaf in the last step of the recursion and therefore been sent a null object, return 0.
 		if (root == null) {
@@ -276,6 +506,10 @@ public class Tree {
 	}
 
 	// compute height of the surname linked tree starting from surname root name
+	public int computeSurnameTreeHeight() {
+		return computeSurnameTreeHeight(surnameRoot);
+	}
+	
 	public int computeSurnameTreeHeight(Person root) {
 		if (root == null) {
 			return 0;
@@ -366,6 +600,100 @@ public class Tree {
 		return null;
 	}
 	
+	// overloaded method. invoke method starting at root.
+	public void printNamesLongerThan(int numChar) {
+		System.out.println("- First names with at least " + numChar + " characters: -");
+		printNamesLongerThan(root, numChar);
+	}
+	
+	public void printNamesLongerThan(Person current, int numChar) {
+		// using depth first traversal? or breadth first?
+		// we want to be using a recursive search, so I guess depth-first.
+		// maybe both? and measure which one is faster? my guess is breadth-first will be faster..... 'cause it's like O(n)!!! isn't it?
+		// check if the current one counts as longer than!
+		if (current.getFirstName().length() >= numChar) {
+			System.out.println(current.getFirstName());
+		}
+		// recursively call this on before and after.
+		// do the null check before sending off the recursive call, eh
+		if (current.getBefore() != null) {
+			printNamesLongerThan(current.getBefore(), numChar);
+		}
+		if (current.getAfter() != null) {
+			printNamesLongerThan(current.getAfter(), numChar);
+		}
+	}
+	
+	// overloaded method. invoke method starting at root.
+	public void printSurnamesLongerThan(int numChar) {
+		System.out.println("- Surnames with at least " + numChar + " characters: -");
+		printSurnamesLongerThan(surnameRoot, numChar);
+	}
+	
+	public void printSurnamesLongerThan(Person current, int numChar) {
+		// using depth first traversal? or breadth first?
+		// we want to be using a recursive search, so I guess depth-first.
+		// maybe both? and measure which one is faster? my guess is breadth-first will be faster..... 'cause it's like O(n)!!! isn't it?
+		// check if the current one counts as longer than!
+		if (current.getSurname().length() >= numChar) {
+			System.out.println(current.getSurname());
+		}
+		// recursively call this on before and after.
+		// do the null check before sending off the recursive call, eh
+		if (current.getBeforeBySurname() != null) {
+			printSurnamesLongerThan(current.getBeforeBySurname(), numChar);
+		}
+		if (current.getAfterBySurname() != null) {
+			printSurnamesLongerThan(current.getAfterBySurname(), numChar);
+		}
+	}
+	
+	// print people whose first names are longer than their surnames
+	public void printNamesLongerThanSurname() {
+		System.out.println("- People whose first names are longer than their surnames: -");
+		printNamesLongerThanSurname(root);
+	}
+	
+	public void printNamesLongerThanSurname(Person current) {
+		// does it apply to current person?
+		if (current.getFirstName().length() > current.getSurname().length()) {
+			System.out.println(current.getName());
+		}
+		// check with the before and after nodes
+		if (current.getBefore() != null) {
+			printNamesLongerThanSurname(current.getBefore());
+		}
+		if (current.getAfter() != null) {
+			printNamesLongerThanSurname(current.getAfter());
+		}
+	}
+	
+	// print people whose first names are longer than their surnames
+	public void printSurnamesLongerThanFirstName() {
+		System.out.println("- People whose surnames are longer than their first names: -");
+		printSurnamesLongerThanFirstName(surnameRoot);
+	}
+	
+	public void printSurnamesLongerThanFirstName(Person current) {
+		// does it apply to current person?
+		if (current.getSurname().length() > current.getFirstName().length()) {
+			System.out.println(current.getName());
+		}
+		// check with the before and after nodes
+		if (current.getBeforeBySurname() != null) {
+			printSurnamesLongerThanFirstName(current.getBeforeBySurname());
+		}
+		if (current.getAfterBySurname() != null) {
+			printSurnamesLongerThanFirstName(current.getAfterBySurname());
+		}
+	}
+	
+//	public void changeName(Person person, String newName) {
+//		person.setName(newName);
+//		// want to remove the person from the tree? oh gosh. do you have to redo the tree in its entirety? yikes!
+//		// yeah, shit, I guess you do lol
+//	}
+	
 	// we don't want the tree to be skewed, but actually for an A grade assignment we wanna be able to detect skew and also change the tree to lessen it so. might as well just set the first name as the root for now and work on the code to sort the skew later :)
 	
 	public static void main(String[] args) {
@@ -377,20 +705,34 @@ public class Tree {
 //		tree.printAllPreOrderedBySurname();
 //		tree.printAllPostOrder();
 //		tree.printAllPostOrderedBySurname();
-		System.out.println(tree.computeTreeHeight(tree.root));
-		System.out.println(tree.computeSurnameTreeHeight(tree.surnameRoot));
+		System.out.println(tree.computeTreeHeight());
+		System.out.println(tree.computeSurnameTreeHeight());
 		
 		// print successive levels of the trees using composite method breadth first search
 		tree.printLevels();
 		tree.printSurnameLevels();
 
 		// print successive levels using queue-employing breadth first search
-		tree.printNamesBreadthFirst(tree.root);
-		tree.printNamesBySurnameBreadthFirst(tree.surnameRoot);
+		tree.printNamesBreadthFirst();
+		tree.printNamesBySurnameBreadthFirst();
 		
 		// search for people by first and surnames using depth-first traversal
 		tree.findByName("jo");
 		tree.findBySurname("ao");
+		
+//		tree.printNamesLongerThan(9);
+//		tree.printSurnamesLongerThan(10);
+//
+//		tree.printNamesLongerThanSurname();
+//		tree.printSurnamesLongerThanFirstName();
+		
+		tree.changeName(tree.findByName("zach"), "Zachary Siefkes");
+		tree.changeName(tree.findByName("jack"), "Zack Arron");
+		tree.changeName(tree.findByName("ia"), "Roger Black");
+		tree.printAll();
+		tree.printAllOrderedBySurname();
+		tree.printLevels();
+		tree.printSurnameLevels();
 	}
 
 }

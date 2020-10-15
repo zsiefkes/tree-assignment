@@ -11,6 +11,12 @@ public class Person {
 	
 	public Person(String name) {
 		this.name = name;
+		processName(name);
+		this.before = null;
+		this.after = null;
+	}
+	
+	private void processName(String name) {
 		// set surname, if applicable. assumes that surname is the last word in the string.
 		if (name.contains(" ")) {
 			String[] names = name.split(" ");
@@ -22,35 +28,9 @@ public class Person {
 			this.firstName = name;
 			this.surnameFirstName = name;
 		}
-		this.before = null;
-		this.after = null;
 	}
 	
 	// Getters and Setters
-	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getSurname() {
-		return surname;
-	}
-
-	public void setSurname(String surname) {
-		this.surname = surname;
-	}
-
-	public String getSurnameFirstName() {
-		return surnameFirstName;
-	}
-
-	public void setSurnameFirstName(String surnameFirstName) {
-		this.surnameFirstName = surnameFirstName;
-	}
 
 	public Person getBefore() {
 		return before;
@@ -82,6 +62,28 @@ public class Person {
 
 	public void setAfterBySurname(Person afterBySurname) {
 		this.afterBySurname = afterBySurname;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public String getSurname() {
+		return surname;
+	}
+
+	public String getSurnameFirstName() {
+		return surnameFirstName;
+	}
+	
+	// set new full name and process first and last names. 
+	public void setName(String name) {
+		this.name = name;
+		processName(name);
 	}
 
 }
