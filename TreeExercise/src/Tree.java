@@ -1,3 +1,11 @@
+// add search by name and last name
+// add search for people names with length properties
+// ^ note both searches need to be recursively structured!
+// make it javafx-y!
+// measure skew
+// fix skew. phwoar
+// add timing shizz
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayDeque;
@@ -305,6 +313,58 @@ public class Tree {
 		}
 	}
 	
+	// search for names using depth-first traversal
+	
+	// overloaded method. start search at the root person.
+	public Person findByName(String name) {
+		return this.findByName(root, name);
+	}
+	
+	public Person findByName(Person person, String name) {
+		if (person == null) { 
+			return null;
+		}
+		if (person.getName().toLowerCase().contains(name.toLowerCase())) {
+			System.out.println("found match: " + person.getName());
+			return person;
+		}
+		Person before = findByName(person.getBefore(), name);
+		if (before != null) {
+			return before;
+		}
+		Person after = findByName(person.getAfter(), name);
+		if (after != null) {
+			return after;
+		}
+		return null;
+	}
+	
+	// overloaded method. start search at the root person.
+	public Person findBySurname(String surname) {
+		return this.findBySurname(surnameRoot, surname);
+	}
+	
+	public Person findBySurname(Person person, String surname) {
+		// ugh...........
+		// case-insensitive search for full or partial name? yeah.
+		// first do the logic of the traversal for an full case-insensitive match.
+		if (person == null) { 
+			return null;
+		}
+		if (person.getSurname().toLowerCase().contains(surname.toLowerCase())) {
+			System.out.println("found match: " + person.getSurnameFirstName());
+			return person;
+		}
+		Person before = findBySurname(person.getBeforeBySurname(), surname);
+		if (before != null) {
+			return before;
+		}
+		Person after = findBySurname(person.getAfterBySurname(), surname);
+		if (after != null) {
+			return after;
+		}
+		return null;
+	}
 	
 	// we don't want the tree to be skewed, but actually for an A grade assignment we wanna be able to detect skew and also change the tree to lessen it so. might as well just set the first name as the root for now and work on the code to sort the skew later :)
 	
@@ -327,6 +387,10 @@ public class Tree {
 		// print successive levels using queue-employing breadth first search
 		tree.printNamesBreadthFirst(tree.root);
 		tree.printNamesBySurnameBreadthFirst(tree.surnameRoot);
+		
+		// search for people by first and surnames using depth-first traversal
+		tree.findByName("jo");
+		tree.findBySurname("ao");
 	}
 
 }
