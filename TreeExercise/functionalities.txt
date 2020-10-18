@@ -8,20 +8,17 @@ My project uses a text-based UI and runs from within the TreeTextInterface class
 - Print out all imported names, either first name first or surname first, using: 
 	- depth-first search (sorted in alphabetical order by either first name or surname)
 	- pre- and post- order depth-first search (as above but with the traversed node printed before or after its children)
-	- breadth-first search (each level of the first-name-connected or surname-connected trees printed sequentially)
-- Compute the height of a tree
-- Print a tree level by level
-- Find a person by searching their first name
-- Find a person by searching their surname
-- Find people with first name longer than their surname
-- Find people with surname longer than their first name
-- Find people whose first names are longer than a specified number of characters 
-- Find people whose surnames are longer than a specified number of characters
-	All of the above methods use a recursively implemented depth-first search.
-
-- Change a person's name while maintaining consistency of the binary search trees. The existing connections between the person and all of their "child" nodes in both trees are automatically adjusted to maintain alphabetical order.
- 	This method uses a breadth-first algorithm to remove a person and all of their children from the trees, queue them up and add them all back after changing the person's name.
+	- breadth-first search (each level of the first-name-ordered or surname-ordered trees printed sequentially)
+- Find a person by searching for their first name.
+- Find a person by searching for their surname.
+- Find people whose first names are longer than a specified number of characters. 
+- Find people whose surnames are longer than a specified number of characters.
+- Find people with first name longer than their surname.
+- Find people with surname longer than their first name.
+- Compute the height of a tree.
+- Print a tree level by level.
+- Change a person's name while maintaining consistency of the binary search trees.
  
-I also attempted a JavaFX user interface. I spent too much time just trying get a binary tree diagram displayed correctly, and didn't quite manage to get there - something is messing up in the calculation of the x coordinate for one of the tree's arms. Please try it out if you like - it runs from the UserInterface class in conjunction with the Tree class. Be sure to scroll across to the right after running Print Name Tree to see the tree, as it is very wide...
+I also attempted a JavaFX GUI. I spent too much time just trying get a binary tree diagram displayed correctly, and didn't quite manage to get there - something is messing up in the calculation of the x coordinate for one of the tree's arms. Please try it out if you like - it runs from the UserInterface class in conjunction with the Tree class. Be sure to scroll across to the right after running Print Name Tree to see the tree, as it is very wide...
  	
  Based on the grading criteria, I think my assignment will receive a B+.
