@@ -110,7 +110,7 @@ public class TreeTextInterface {
 		// now change the name
 		person.setName(newName);
 
-		// now remove each of its child nodes from the tree, and then add each one back to both trees. 
+		// now remove each of its child nodes from the trees, and then add each one back to both trees. 
 		removeAndAddBack(person);
 		removeSurnameVerticesAndAddBack(person);
 		

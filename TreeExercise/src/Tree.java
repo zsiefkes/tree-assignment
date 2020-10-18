@@ -35,7 +35,6 @@ public class Tree {
 			// instantiate name variable to be read
 			String name;
 			while ((name = csvReader.readLine()) != null) {
-//				System.out.println("reading: " + name);
 				// add person to existing tree by name and surname
 				Person person = new Person(name);
 				this.addPerson(person);
@@ -48,7 +47,7 @@ public class Tree {
 		}
 	}
 
-	// overload method - calling with just one argument calls the method that tries to add the new person compared to the root.
+	// overload method. calling with just one argument will add the new person to the tree by first comparing to the root.
 	public void addPerson(Person newPerson) {
 		if (root == null) {
 			this.root = newPerson;
@@ -81,16 +80,6 @@ public class Tree {
 		// first find parent node
 		Person parent = findParent(person);
 		
-		if (parent == null) {
-			System.out.println("parent null");
-		}
-		if (parent.getBefore() == null) {
-			System.out.println("parent get before null");
-		}
-		if (parent.getAfter() == null) {
-			System.out.println("parent get after null");
-		}
-		
 		// remove person from parent node's children
 		if (parent != null) {
 			if (parent.getBefore() != null && person == parent.getBefore()) {
@@ -104,21 +93,10 @@ public class Tree {
 			}
 		}
 		
-		// need to repeat above for the surname vertices!!!!
+		// repeat above for the surname connections
 		
 		// first find surname parent node 
 		Person surnameParent = findSurnameParent(person);
-		
-		if (surnameParent == null) {
-			System.out.println("surnameParent null");
-//			return;
-		}
-		if (surnameParent.getBeforeBySurname() == null) {
-			System.out.println("surnameParent get before null");
-		}
-		if (surnameParent.getAfterBySurname() == null) {
-			System.out.println("surnameParent get after null");
-		}
 		
 		// remove person from parent node's children
 		if (surnameParent != null) {
@@ -132,12 +110,12 @@ public class Tree {
 				return;
 			}
 		}
+		
 		// now change the name
 		person.setName(newName);
 
-		// now we need to remove each of its child nodes from the tree, i think effectively just by removing the before and after vertices, and then add each one back to the tree. yeah?
+		// now we need to remove each of its child nodes from the trees, and then add each one back to both trees.
 		removeAndAddBack(person);
-		// same for the surname vertices
 		removeSurnameVerticesAndAddBack(person);
 		
 	}
@@ -296,19 +274,10 @@ public class Tree {
 		// display current name
 		Text text = new Text();
 		text.setText(current.getName());
-//		// display root node top and center
-//		if (depth == 1) {
-////			text.setX(UserInterface.treePaneCenter - UserInterface.treeNodeWidth / 2);
-//		} else {
-//			// adjust horizontal placement of nodes for all levels below root
-//			text.setX(UserInterface.treePaneCenter + numAcross * UserInterface.treeNodeWidth);
-//		}
 		
 		// set horizontal and vertical placement and add to display
-//		int x = (int)((treePaneWidth / Math.pow(2, depth) * numAcross - nodeWidth / 2)); 
 		double x = ((treePaneWidth / Math.pow(2, depth)) * numAcross) - nodeWidth / 2; 
 		text.setX(x);
-//		text.setX(treePaneWidth / Math.pow(2, depth) * numAcross - nodeWidth / 2);
 		text.setY(depth * UserInterface.treeNodeHeight);			
 		display.getChildren().add(text);
 		
@@ -503,7 +472,7 @@ public class Tree {
 			return 0;
 		} else {
 			// compute height of each subtree
-			int beforeHeight = computeTreeHeight(root.getBefore()); // will it work sending null?? apparently, yeah. I mean we have the uh... catcher for it in the first line. if we didn't have that, the recursive call here throws a null pointer exception.
+			int beforeHeight = computeTreeHeight(root.getBefore());
 			int afterHeight = computeTreeHeight(root.getAfter());
 			
 			// use the larger one
@@ -589,9 +558,6 @@ public class Tree {
 	}
 	
 	public Person findBySurname(Person person, String surname) {
-		// ugh...........
-		// case-insensitive search for full or partial name? yeah.
-		// first do the logic of the traversal for an full case-insensitive match.
 		if (person == null) { 
 			return null;
 		}
@@ -617,9 +583,6 @@ public class Tree {
 	}
 	
 	public void printNamesLongerThan(Person current, int numChar) {
-		// using depth first traversal? or breadth first?
-		// we want to be using a recursive search, so I guess depth-first.
-		// maybe both? and measure which one is faster? my guess is breadth-first will be faster..... 'cause it's like O(n)!!! isn't it?
 		// check if the current one counts as longer than!
 		if (current.getFirstName().length() >= numChar) {
 			System.out.println(current.getFirstName());
@@ -641,9 +604,6 @@ public class Tree {
 	}
 	
 	public void printSurnamesLongerThan(Person current, int numChar) {
-		// using depth first traversal? or breadth first?
-		// we want to be using a recursive search, so I guess depth-first.
-		// maybe both? and measure which one is faster? my guess is breadth-first will be faster..... 'cause it's like O(n)!!! isn't it?
 		// check if the current one counts as longer than!
 		if (current.getSurname().length() >= numChar) {
 			System.out.println(current.getSurname());
@@ -702,60 +662,6 @@ public class Tree {
 		FileChooser fileChooser = new FileChooser();
 		File selectedFile = fileChooser.showOpenDialog(stage);
 		addNamesFromCSVFile(selectedFile.getPath());
-		// not supposed to be using java.awt i'm pretty sure. that's the old one.. we want javafx
-//	    FileDialog dialog = new FileDialog((Frame)null, "Select File to Open");
-//	    dialog.setMode(FileDialog.LOAD);
-//	    dialog.setVisible(true);
-//	    String file = dialog.getFile();
-//	    System.out.println(file + " chosen.");
-
 	}
 	
-//	public void changeName(Person person, String newName) {
-//		person.setName(newName);
-//		// want to remove the person from the tree? oh gosh. do you have to redo the tree in its entirety? yikes!
-//		// yeah, shit, I guess you do lol
-//	}
-	
-	// we don't want the tree to be skewed, but actually for an A grade assignment we wanna be able to detect skew and also change the tree to lessen it so. might as well just set the first name as the root for now and work on the code to sort the skew later :)
-	
-//	public static void main(String[] args) {
-//		Tree tree = new Tree();
-//		tree.addNamesFromCSVFile("mswdev.csv");
-//		tree.printAll();
-//		tree.printAllOrderedBySurname();
-////		tree.printAllPreOrder();
-////		tree.printAllPreOrderedBySurname();
-////		tree.printAllPostOrder();
-////		tree.printAllPostOrderedBySurname();
-//		System.out.println(tree.computeTreeHeight());
-//		System.out.println(tree.computeSurnameTreeHeight());
-//		
-//		// print successive levels of the trees using composite method breadth first search
-//		tree.printLevels();
-//		tree.printSurnameLevels();
-//
-//		// print successive levels using queue-employing breadth first search
-//		tree.printNamesBreadthFirst();
-//		tree.printNamesBySurnameBreadthFirst();
-//		
-//		// search for people by first and surnames using depth-first traversal
-//		tree.findByName("jo");
-//		tree.findBySurname("ao");
-//		
-////		tree.printNamesLongerThan(9);
-////		tree.printSurnamesLongerThan(10);
-////
-////		tree.printNamesLongerThanSurname();
-////		tree.printSurnamesLongerThanFirstName();
-//		
-//		tree.changeName(tree.findByName("zach"), "Zachary Siefkes");
-////		tree.changeName(tree.findByName("jack"), "Zack Arron");
-////		tree.changeName(tree.findByName("ia"), "Roger Black");
-//		tree.printAll();
-//		tree.printAllOrderedBySurname();
-//		tree.printLevels();
-//		tree.printSurnameLevels();
-//	}
-
 }
