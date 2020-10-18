@@ -1,25 +1,24 @@
-// allow for name changes and redo the ordering.
-// ^ for this one, need a name change method on Person class to filter through the changes to surname etc.
-// make it javafx-y!
-// measure skew
-// fix skew. phwoar
-// add timing shizz
-// tips from karsten on measuring skew:
-/*
- * measuring the height is a good one. you can compute what the height of a "perfect" binary tree would be for the number of nodes you have, and compare that to your actual height.
- * You can also count the number of nodes on each side of the root node to detect whether it's left or right skewed.
- */
-
-
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayDeque;
 import java.util.Queue;
+
+import javafx.scene.layout.Pane;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 public class Tree {
 
 	private Person root;
 	private Person surnameRoot;
+	
+	// for printing tree nodes
+	private int treeHeight;
+	private int nodeWidth;
+	private int treePaneWidth;
 
 	public Tree() {
 		this.root = null;
@@ -29,14 +28,14 @@ public class Tree {
 		this.root = root;
 	}
 
-	// read in first and last name data from csv file. learned from https://stackabuse.com/reading-and-writing-csvs-in-java/ 
+	// read in first and last name data from csv file.
 	public void addNamesFromCSVFile(String fileName) {
 		try {
 			BufferedReader csvReader = new BufferedReader(new FileReader(fileName));
 			// instantiate name variable to be read
 			String name;
 			while ((name = csvReader.readLine()) != null) {
-				System.out.println("reading: " + name);
+//				System.out.println("reading: " + name);
 				// add person to existing tree by name and surname
 				Person person = new Person(name);
 				this.addPerson(person);
@@ -78,11 +77,6 @@ public class Tree {
 	
 	// want to be able to remove a person from both trees, for the sake of changing their names. yeah?
 	public void changeName(Person person, String newName) {
-		// what we do here: we connect either the before or after node to... crap. um crap crap crap
-		// i think what we do is we remove all the child nodes
-		// then recursively add each one back. it'll start at the root then move down the tree. i think that makes sense :)
-		// how to we "remove" it from the tree?
-		// i think you need to first find the parent node. so do a depth or breadth first search until you find them.
 		
 		// first find parent node
 		Person parent = findParent(person);
@@ -164,7 +158,7 @@ public class Tree {
 			current.setBefore(null);
 			current.setAfter(null);
 			
-			// now try add the person back to the tree :o
+			// now add the person back to the tree
 			addPerson(current);
 			
 		}
@@ -185,27 +179,13 @@ public class Tree {
 			// now, remove the before and after links
 			current.setBeforeBySurname(null);
 			current.setAfterBySurname(null);
-			// done! ? I think?
 
-			// now try add the person back to the tree :o
+			// now add the person back to the surname tree
 			addSurnameLinks(current);
 			
 		}
 	}
-//	
-//	// recursively remove children from a node, and all the children of each of its children.
-//	public Person removeChildren(Person person) {
-//		if (person.getBefore() != null) {
-//			removeChildren(person.getBefore());
-//		}
-//		person.setBefore(null);
-//		if (person.getAfter() != null) {
-//			removeChildren(person.getAfter());
-//		}
-//		person.setAfter(null);
-//		return person;
-//	}
-	
+
 	// use queue to run breadth first search from root to find parent node of a given node
 	public Person findParent(Person person) {
 		// check if root
@@ -263,32 +243,6 @@ public class Tree {
 		return null;
 	}
 	
-//	public Person findParent(Person person) {
-//		return findParent(root, person);
-//	}
-//	
-//	public Person findParent(Person current, Person person) {
-//		// check if root 
-//		if (current == person) {
-//			return current;
-//		}
-//		// check if the current node is a parent of the person in question 
-//		if (current.getBefore() == person) {
-//			return current;
-//		}
-//		if (current.getAfter() == person) {
-//			return current;
-//		}
-//		// if parent node has not yet been found, send off to child nodes
-//		if (current.getBefore() != null) {
-//			findParent(current.getBefore(), person);
-//		}
-//		if (current.getAfter() != null) {
-//			findParent(current.getAfter(), person);
-//		}
-//		return null;
-//	}
-	
 	// gotta repeat the above for ordering by surname now too! right?
 	public void addSurnameLinks(Person newPerson) {
 		if (surnameRoot == null) {
@@ -318,19 +272,75 @@ public class Tree {
 	}
 	
 	// in-order depth-first (sorted)
-	public void printAll() {
-		printNames(root);
+	public void printAll(Pane display) {
+		// okay, we're going to cheat a bit or at least make this less efficient by first figuring out the height of the tree.
+		treeHeight = computeTreeHeight();
+		nodeWidth = UserInterface.treeNodeWidth;
+		
+		// now the width of the treepane should be
+		treePaneWidth = (int)(Math.pow(2, treeHeight)) * nodeWidth;
+		UserInterface.setHorizontalTreePaneScrollPosition((double)(treePaneWidth / 2));
+		
+		// and then so the x position of each node should be treePaneWidth / Math.pow(2, depth) - nodeWidth / 2;
+		printNames(root, display, 1, 1);
 	}
-	public void printNames(Person current) {
-		// check for before person and run recursion on them
+	
+	public void printNames(Person current, Pane display, int depth, int numAcross) {
+		
 		if (current.getBefore() != null) {
-			printNames(current.getBefore());
+//			System.out.println(current.getName() + ", before: " + current.getBefore().getName());
+			// for before node, set numAcross as current numAcross * 2 - 1
+			printNames(current.getBefore(), display, depth + 1, numAcross * 2 - 1);				
 		}
-		// print current person's name after exhausting before persons recursive calls
-		System.out.println(current.getName());
+		
+		// display current name
+		Text text = new Text();
+		text.setText(current.getName());
+//		// display root node top and center
+//		if (depth == 1) {
+////			text.setX(UserInterface.treePaneCenter - UserInterface.treeNodeWidth / 2);
+//		} else {
+//			// adjust horizontal placement of nodes for all levels below root
+//			text.setX(UserInterface.treePaneCenter + numAcross * UserInterface.treeNodeWidth);
+//		}
+		
+		// set horizontal and vertical placement and add to display
+//		int x = (int)((treePaneWidth / Math.pow(2, depth) * numAcross - nodeWidth / 2)); 
+		double x = ((treePaneWidth / Math.pow(2, depth)) * numAcross) - nodeWidth / 2; 
+		text.setX(x);
+//		text.setX(treePaneWidth / Math.pow(2, depth) * numAcross - nodeWidth / 2);
+		text.setY(depth * UserInterface.treeNodeHeight);			
+		display.getChildren().add(text);
+		
 		// check for after person and run recursion on them
 		if (current.getAfter() != null) {
-			printNames(current.getAfter());
+//			System.out.println(current.getName() + ", after: " + current.getAfter().getName());
+			// for before node, set numAcross as current numAcross * 2 
+			printNames(current.getAfter(), display, depth + 1, numAcross * 2);				
+ 		}
+	}
+	
+	// in-order depth-first (sorted by )
+	public void printAllOrdered(ScrollPane display) {
+		printAllOrdered(surnameRoot);
+	}
+	public void printAllOrdered(Person current) {
+		// check for before person and run recursion on them
+		if (current.getBeforeBySurname() != null) {
+			printAllOrdered(current.getBefore());
+		}
+		// print current person's full name after exhausting before persons recursive calls
+		System.out.println(current.getSurnameFirstName());
+		// display current name
+		Text text = new Text();
+		text.setText(current.getName());
+		text.setX(x);
+		text.setY(depth * UserInterface.treeNodeHeight);			
+		display.getChildren().add(text);
+		
+		// check for after person and run recursion on them
+		if (current.getAfterBySurname() != null) {
+			printAllOrdered(current.getAfter());
 		}
 	}
 	
@@ -422,7 +432,7 @@ public class Tree {
 			// grab first person in the queue and print their name
 			Person person = queue.poll();
 			System.out.println(person.getName());
-			// add the before and after people to the queue... i really don't get how this works :S how tf this work?
+			// add the before and after people to the queue. Ahhh I get it now :) lol so simple! so neat
 			if (person.getBefore() != null) {
 				queue.offer(person.getBefore());
 			}
@@ -688,6 +698,19 @@ public class Tree {
 		}
 	}
 	
+	public void chooseCSVFile(Stage stage) {
+		FileChooser fileChooser = new FileChooser();
+		File selectedFile = fileChooser.showOpenDialog(stage);
+		addNamesFromCSVFile(selectedFile.getPath());
+		// not supposed to be using java.awt i'm pretty sure. that's the old one.. we want javafx
+//	    FileDialog dialog = new FileDialog((Frame)null, "Select File to Open");
+//	    dialog.setMode(FileDialog.LOAD);
+//	    dialog.setVisible(true);
+//	    String file = dialog.getFile();
+//	    System.out.println(file + " chosen.");
+
+	}
+	
 //	public void changeName(Person person, String newName) {
 //		person.setName(newName);
 //		// want to remove the person from the tree? oh gosh. do you have to redo the tree in its entirety? yikes!
@@ -696,43 +719,43 @@ public class Tree {
 	
 	// we don't want the tree to be skewed, but actually for an A grade assignment we wanna be able to detect skew and also change the tree to lessen it so. might as well just set the first name as the root for now and work on the code to sort the skew later :)
 	
-	public static void main(String[] args) {
-		Tree tree = new Tree();
-		tree.addNamesFromCSVFile("mswdev.csv");
-		tree.printAll();
-		tree.printAllOrderedBySurname();
-//		tree.printAllPreOrder();
-//		tree.printAllPreOrderedBySurname();
-//		tree.printAllPostOrder();
-//		tree.printAllPostOrderedBySurname();
-		System.out.println(tree.computeTreeHeight());
-		System.out.println(tree.computeSurnameTreeHeight());
-		
-		// print successive levels of the trees using composite method breadth first search
-		tree.printLevels();
-		tree.printSurnameLevels();
-
-		// print successive levels using queue-employing breadth first search
-		tree.printNamesBreadthFirst();
-		tree.printNamesBySurnameBreadthFirst();
-		
-		// search for people by first and surnames using depth-first traversal
-		tree.findByName("jo");
-		tree.findBySurname("ao");
-		
-//		tree.printNamesLongerThan(9);
-//		tree.printSurnamesLongerThan(10);
+//	public static void main(String[] args) {
+//		Tree tree = new Tree();
+//		tree.addNamesFromCSVFile("mswdev.csv");
+//		tree.printAll();
+//		tree.printAllOrderedBySurname();
+////		tree.printAllPreOrder();
+////		tree.printAllPreOrderedBySurname();
+////		tree.printAllPostOrder();
+////		tree.printAllPostOrderedBySurname();
+//		System.out.println(tree.computeTreeHeight());
+//		System.out.println(tree.computeSurnameTreeHeight());
+//		
+//		// print successive levels of the trees using composite method breadth first search
+//		tree.printLevels();
+//		tree.printSurnameLevels();
 //
-//		tree.printNamesLongerThanSurname();
-//		tree.printSurnamesLongerThanFirstName();
-		
-		tree.changeName(tree.findByName("zach"), "Zachary Siefkes");
-		tree.changeName(tree.findByName("jack"), "Zack Arron");
-		tree.changeName(tree.findByName("ia"), "Roger Black");
-		tree.printAll();
-		tree.printAllOrderedBySurname();
-		tree.printLevels();
-		tree.printSurnameLevels();
-	}
+//		// print successive levels using queue-employing breadth first search
+//		tree.printNamesBreadthFirst();
+//		tree.printNamesBySurnameBreadthFirst();
+//		
+//		// search for people by first and surnames using depth-first traversal
+//		tree.findByName("jo");
+//		tree.findBySurname("ao");
+//		
+////		tree.printNamesLongerThan(9);
+////		tree.printSurnamesLongerThan(10);
+////
+////		tree.printNamesLongerThanSurname();
+////		tree.printSurnamesLongerThanFirstName();
+//		
+//		tree.changeName(tree.findByName("zach"), "Zachary Siefkes");
+////		tree.changeName(tree.findByName("jack"), "Zack Arron");
+////		tree.changeName(tree.findByName("ia"), "Roger Black");
+//		tree.printAll();
+//		tree.printAllOrderedBySurname();
+//		tree.printLevels();
+//		tree.printSurnameLevels();
+//	}
 
 }
